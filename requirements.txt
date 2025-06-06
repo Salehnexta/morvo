@@ -1,29 +1,28 @@
-# Minimal Railway Deployment Requirements
-# Conflict-free and tested for production
+# Railway Deployment - Essential Core Only
+# Minimal setup to fix installation freeze
 
-# Core FastAPI - Stable versions
-fastapi>=0.100.0,<0.105.0
-uvicorn[standard]>=0.20.0,<0.25.0
-pydantic>=2.0.0,<3.0.0
+# Core FastAPI Stack
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+starlette==0.27.0
+h11==0.14.0
+anyio==3.7.1
 
-# AI & Agents - Core only
-crewai>=0.50.0,<1.0.0
-openai>=1.0.0,<2.0.0
-langchain>=0.0.300,<0.1.0
-langchain-openai>=0.0.1,<0.1.0
+# AI Core - OpenAI only
+openai==1.6.1
 
 # Essential utilities
-python-dotenv>=1.0.0
-requests>=2.30.0
-websockets>=11.0.0
-
-# Database essentials
-supabase>=1.0.0
-redis>=4.0.0
+python-dotenv==1.0.0
+requests==2.31.0
+websockets==11.0.2
 
 # Security
-python-jose[cryptography]>=3.0.0
-python-multipart>=0.0.5
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
 
 # File handling
-aiofiles>=23.0.0
+aiofiles==23.2.1
+
+# HTTP client
+httpx==0.26.0
