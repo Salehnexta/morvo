@@ -1,9 +1,26 @@
-# Ignore everything except essential files for deployment
-*
-!main.py
+# Railway deployment - Include essential modular files only
+
+# Core application files
+!main_new.py
+!agents.py
+!websocket_manager.py
+!config.py
+!models.py
+!providers.py
+
+# Routes directory
+!routes/
+!routes/*.py
+
+# Configuration files
 !requirements.txt
 !railway.toml
+!.env.example
 !README.md
+!start.sh
+
+# Ignore everything else
+*
 
 # Explicitly ignore problematic files
 Dockerfile*
@@ -15,47 +32,18 @@ package-lock.json
 node_modules/
 nixpacks.toml
 
-# Ignore all other Python files that might cause conflicts
-morvo_*.py
-agent_*.py
-external_*.py
-*_integration.py
-run_*.py
-startup_*.py
-smart_*.py
-semrush_*.py
-mcp_*.py
-data_*.py
+# Ignore old/backup files
+main.py
+backup_*/
+*backup*
+*old*
+*test*
+*tmp*
 
-# Ignore project directories
-frontend-project/
-agents/
-crews/
-config/
-database/
-db/
-tasks/
-tools/
-utils/
-frontend/
-
-# Ignore testing and logs
-test_*.mjs
-test_*.js
-*.log
-logs/
-__pycache__/
-.venv/
-.env*
-
-# Ignore documentation and reports
-*.md
-!README.md
-
-# Ignore deployment scripts
-*.sh
-monitor_*.py
-
-# Git and backup files
+# Ignore development files
 .git/
-*.backup
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
