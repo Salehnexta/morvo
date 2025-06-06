@@ -1,28 +1,35 @@
-# Railway Deployment - Essential Core Only
-# Minimal setup to fix installation freeze
+# Railway Deployment - Strictly Constrained Versions
+# Fixed pip backtracking issue with exact version pinning
 
-# Core FastAPI Stack
+# Core FastAPI Stack - Exact versions
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
+pydantic-core==2.14.1
 starlette==0.27.0
 h11==0.14.0
 anyio==3.7.1
 
-# AI Core - OpenAI only
+# AI Core - OpenAI only (no conflicts)
 openai==1.6.1
 
-# Essential utilities
+# Essential utilities - Fixed versions
 python-dotenv==1.0.0
 requests==2.31.0
 websockets==11.0.2
 
-# Security
+# Security - Exact versions
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.6
 
-# File handling
+# File handling - Fixed
 aiofiles==23.2.1
 
-# HTTP client
+# HTTP client - Exact version
 httpx==0.26.0
+httpcore==1.0.8
+
+# Basic dependencies - No conflicts
+typing-extensions==4.8.0
+click==8.1.8
+certifi==2024.8.30
