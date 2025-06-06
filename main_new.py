@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 # Import configurations and managers
-from config import APP_VERSION, PORT, DEBUG
+from config import APP_VERSION, DEBUG
 from websocket_manager import handle_websocket_connection, manager
 from models import AwarioWebhookData
 
@@ -121,12 +121,16 @@ async def awario_webhook(payload: AwarioWebhookData):
 # تشغيل التطبيق
 if __name__ == "__main__":
     import uvicorn
+    import os
     
-    logger.info(f"🚀 تشغيل Morvo AI على المنفذ 8001")
+    # استخدام PORT من متغيرات البيئة (Railway) أو 8001 محلياً
+    port = int(os.getenv("PORT", 8001))
+    
+    logger.info(f"🚀 تشغيل Morvo AI على المنفذ {port}")
     uvicorn.run(
         "main_new:app",
         host="0.0.0.0",
-        port=8001,
+        port=port,
         reload=DEBUG,
         log_level="info"
     )
