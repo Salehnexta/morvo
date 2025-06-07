@@ -146,25 +146,98 @@ class UnifiedMorvoCompanion:
             }
     
     async def _build_unified_context(self, user_context: Dict, message: str) -> str:
-        """بناء السياق الموحد لمورفو"""
+        """بناء السياق الموحد الشامل لمورفو - تحليل كامل للبيانات والحملات"""
         context_parts = []
         
-        # User profile context
+        # User profile and business analysis
         if user_context.get('profile'):
             profile = user_context['profile']
             context_parts.append(f"العميل: {profile.get('full_name', 'غير محدد')}")
+            context_parts.append(f"النشاط التجاري: {profile.get('business_type', 'غير محدد')}")
+            context_parts.append(f"الهدف الرئيسي: {profile.get('business_goal', 'نمو الأعمال')}")
         
-        # Business context
+        # Marketing campaigns analysis
         if user_context.get('campaigns'):
-            campaigns_count = len(user_context['campaigns'])
-            context_parts.append(f"الحملات النشطة: {campaigns_count}")
+            campaigns = user_context['campaigns']
+            total_campaigns = len(campaigns)
+            active_campaigns = len([c for c in campaigns if c.get('status') == 'active'])
+            total_budget = sum([float(c.get('budget', 0)) for c in campaigns])
+            
+            context_parts.append(f"📊 تحليل الحملات:")
+            context_parts.append(f"- إجمالي الحملات: {total_campaigns}")
+            context_parts.append(f"- الحملات النشطة: {active_campaigns}")
+            context_parts.append(f"- إجمالي الميزانية: {total_budget:,.0f} ريال")
+            
+            # Performance analysis
+            if campaigns:
+                avg_ctr = sum([float(c.get('ctr', 0)) for c in campaigns]) / len(campaigns)
+                avg_conversion = sum([float(c.get('conversion_rate', 0)) for c in campaigns]) / len(campaigns)
+                context_parts.append(f"- متوسط CTR: {avg_ctr:.2f}%")
+                context_parts.append(f"- متوسط التحويل: {avg_conversion:.2f}%")
         
-        # Analytics context
+        # Analytics and KPI analysis
         if user_context.get('analytics'):
-            analytics_count = len(user_context['analytics'])
-            context_parts.append(f"نقاط البيانات: {analytics_count}")
+            analytics = user_context['analytics']
+            total_traffic = sum([int(a.get('page_views', 0)) for a in analytics])
+            total_conversions = sum([int(a.get('conversions', 0)) for a in analytics])
+            
+            context_parts.append(f"📈 تحليل الأداء:")
+            context_parts.append(f"- إجمالي الزيارات: {total_traffic:,}")
+            context_parts.append(f"- إجمالي التحويلات: {total_conversions:,}")
+            
+            if total_traffic > 0:
+                conversion_rate = (total_conversions / total_traffic) * 100
+                context_parts.append(f"- معدل التحويل العام: {conversion_rate:.2f}%")
         
-        return "\n".join(context_parts) if context_parts else "لا توجد بيانات إضافية متاحة"
+        # Content performance analysis
+        if user_context.get('content_performance'):
+            content = user_context['content_performance']
+            top_content = max(content, key=lambda x: x.get('engagement', 0), default={})
+            if top_content:
+                context_parts.append(f"🎯 أفضل محتوى: {top_content.get('title', 'غير محدد')}")
+                context_parts.append(f"- التفاعل: {top_content.get('engagement', 0):,}")
+        
+        # SEO analysis
+        if user_context.get('seo_data'):
+            seo = user_context['seo_data']
+            context_parts.append(f"🔍 تحليل SEO:")
+            context_parts.append(f"- ترتيب الكلمات المفتاحية: {seo.get('avg_ranking', 'غير متاح')}")
+            context_parts.append(f"- نقاط التحسين: {seo.get('improvement_areas', 'تحليل شامل مطلوب')}")
+        
+        # Smart recommendations based on context
+        recommendations = self._generate_smart_recommendations(user_context, message)
+        if recommendations:
+            context_parts.append(f"💡 توصيات ذكية: {recommendations}")
+        
+        return '\n'.join(context_parts) if context_parts else 'لا توجد بيانات تحليلية متاحة - سأقدم نصائح عامة مفيدة'
+    
+    def _generate_smart_recommendations(self, user_context: Dict, message: str) -> str:
+        """توليد توصيات ذكية بناءً على السياق والرسالة"""
+        recommendations = []
+        
+        # Campaign optimization recommendations
+        campaigns = user_context.get('campaigns', [])
+        if campaigns:
+            low_performing = [c for c in campaigns if float(c.get('ctr', 0)) < 2.0]
+            if low_performing:
+                recommendations.append("تحسين CTR للحملات منخفضة الأداء")
+        
+        # Content strategy recommendations
+        if 'محتوى' in message or 'منشور' in message:
+            if user_context.get('content_performance'):
+                recommendations.append("التركيز على المحتوى التفاعلي بناءً على الأداء السابق")
+            else:
+                recommendations.append("بناء استراتيجية محتوى شاملة")
+        
+        # SEO recommendations
+        if 'سيو' in message or 'تحسين' in message or 'بحث' in message:
+            recommendations.append("تحليل الكلمات المفتاحية وتحسين المحتوى")
+        
+        # Analytics recommendations
+        if 'تقرير' in message or 'إحصائيات' in message:
+            recommendations.append("تركيب Google Analytics 4 وإعداد الأهداف")
+        
+        return ' | '.join(recommendations[:3])  # Max 3 recommendations
     
     def get_companion_status(self) -> Dict[str, Any]:
         """حالة رفيق مورفو"""
