@@ -8,5 +8,21 @@ healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
-# Updated: 2025-06-07T02:58:00+03:00 - Fixed port binding for Railway deployment
-# Updated: 2025-06-07T03:33:00+03:00 - Simplified to use main.py as primary entry point
+# Enhanced deployment for MCP & A2A protocols
+# Updated: 2025-06-07T12:46:00+03:00 - Added enhanced protocol support
+
+[variables]
+# Protocol Configuration
+ENHANCED_PROTOCOLS_AVAILABLE = "true"
+MCP_ENABLED = "true"
+A2A_ENABLED = "true"
+
+# Performance Tuning for Enhanced Agents
+UVICORN_WORKERS = "2"
+UVICORN_TIMEOUT_KEEP_ALIVE = "30"
+UVICORN_MAX_REQUESTS = "1000"
+ASYNCIO_TIMEOUT = "60"
+
+# Logging Configuration
+LOG_LEVEL = "INFO"
+ENABLE_PROTOCOL_LOGGING = "true"

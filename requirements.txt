@@ -23,11 +23,25 @@ pydantic==2.11.2
 # pydantic-core updated automatically with pydantic, but pinning for stability
 pydantic-core==2.33.1
 
+# === HTTP CLIENTS & ASYNC ===
+# HTTPX for async HTTP requests (MCP and A2A protocols)
+httpx==0.27.0
+# Requests for synchronous HTTP (keeping for compatibility)
+requests==2.31.0
+
 # === AI & AGENTS ===
 # OpenAI version compatible with LiteLLM 1.68.0 (requires openai<1.76.0)
 openai==1.75.0
 # CrewAI updated to latest version with multimodal support and better LLM integration
 crewai==0.126.0
+# AsyncIO utilities for MCP and A2A protocols
+aiofiles==23.2.0
+
+# === SUPABASE INTEGRATION FOR MCP ===
+# Supabase Python client for MCP data access
+supabase==2.3.4
+# PostgREST client (dependency of supabase)
+postgrest==0.16.8
 
 # === MODEL CONTEXT PROTOCOL (MCP) ===
 # MCP Python SDK for standardized LLM-tool communication
@@ -64,8 +78,6 @@ python-multipart==0.0.12
 # === ENVIRONMENT & CONFIG ===
 # python-dotenv updated for better .env file handling
 python-dotenv==1.0.0
-# aiofiles updated for better async file operations
-aiofiles==23.2.1
 
 # === ADDITIONAL RECOMMENDED DEPENDENCIES ===
 

@@ -4,13 +4,20 @@ SEO Routes for Morvo AI
 """
 
 import logging
+import httpx
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException
-from config import PROVIDERS_AVAILABLE
+from pydantic import BaseModel
+from config import PROVIDERS_AVAILABLE, RAPIDAPI_KEY, RAPIDAPI_SEO_HOST, RAPIDAPI_SEO_BASE_URL
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v2/seo", tags=["seo"])
+
+# SEO Audit Request Model
+class SEOAuditRequest(BaseModel):
+    website: str
+    detailed: Optional[bool] = False
 
 # Import providers manager when available
 try:
@@ -18,6 +25,63 @@ try:
     providers_manager = ProvidersManager()
 except ImportError:
     providers_manager = None
+
+@router.post("/audit")
+async def audit_website(request: SEOAuditRequest):
+    """تدقيق وتحليل الموقع للسيو باستخدام RapidAPI"""
+    
+    if not RAPIDAPI_KEY:
+        raise HTTPException(
+            status_code=500, 
+            detail="مفتاح RapidAPI غير محدد. يرجى إضافة RAPIDAPI_KEY في متغيرات البيئة"
+        )
+    
+    try:
+        # Prepare RapidAPI request
+        url = f"{RAPIDAPI_SEO_BASE_URL}/onpagepro.php"
+        headers = {
+            "x-rapidapi-key": RAPIDAPI_KEY,
+            "x-rapidapi-host": RAPIDAPI_SEO_HOST
+        }
+        
+        # Query parameters as shown in the API documentation
+        params = {
+            "website": request.website
+        }
+        
+        # Make async API request using httpx
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(url, headers=headers, params=params)
+        
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"خطأ في API: {response.status_code} - {response.text}"
+            )
+        
+        # Parse the response
+        audit_data = response.json()
+        
+        # Return structured response
+        return {
+            "status": "success",
+            "website": request.website,
+            "audit_results": audit_data,
+            "analyzed_at": datetime.now().isoformat(),
+            "provider": "RapidAPI SEO Audit Pro",
+            "api_response_time": f"{response.elapsed.total_seconds():.2f}s"
+        }
+        
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=408, detail="انتهت مهلة الاتصال بـ API")
+    except httpx.ConnectError:
+        raise HTTPException(status_code=503, detail="فشل الاتصال بخدمة التدقيق")
+    except httpx.HTTPError as e:
+        logger.error(f"خطأ في طلب API: {e}")
+        raise HTTPException(status_code=500, detail="خطأ في خدمة التدقيق")
+    except Exception as e:
+        logger.error(f"خطأ عام في تدقيق الموقع: {e}")
+        raise HTTPException(status_code=500, detail="فشل في تحليل الموقع")
 
 @router.post("/keywords")
 async def analyze_keywords(keywords: List[str]):

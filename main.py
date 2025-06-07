@@ -17,7 +17,7 @@ from config import (
     ENHANCED_PROTOCOLS_AVAILABLE, FEATURES, SECURITY_CONFIG, LOGGING_CONFIG
 )
 from websocket_manager import handle_websocket_connection, manager
-from models import AwarioWebhookData
+from models import AwarioWebhookData, ChatRequest
 
 # Import modular protocols
 from protocols import EnhancedProtocolManager
@@ -228,6 +228,40 @@ async def a2a_network_status():
     except Exception as e:
         logger.error(f"خطأ في جلب حالة شبكة A2A: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    """نقطة نهاية الدردشة المحسنة مع MCP و A2A"""
+    try:
+        # Initialize protocol manager if not already done
+        if protocol_manager is None:
+            await initialize_protocol_manager()
+        
+        # Process message with enhanced MCP & A2A
+        result = await protocol_manager.enhanced_agents.process_message(
+            user_id=request.user_id,
+            message=request.message,
+            filters=request.filters
+        )
+        
+        return {
+            "response": result.get("response", "عذراً، لم أتمكن من المعالجة"),
+            "agent_used": result.get("primary_agent", "unknown"),
+            "intent": result.get("intent", "general"),
+            "mcp_enabled": result.get("mcp_enabled", False),
+            "a2a_collaboration": result.get("a2a_collaboration", 0),
+            "user_context_loaded": bool(result.get("user_context")),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ خطأ في نقطة نهاية الدردشة: {e}")
+        return {
+            "response": f"عذراً، حدث خطأ في الخدمة: {str(e)[:100]}",
+            "error": str(e),
+            "mcp_enabled": False,
+            "timestamp": datetime.now().isoformat()
+        }
 
 # WebSocket endpoint محسن
 @app.websocket("/ws/{user_id}")

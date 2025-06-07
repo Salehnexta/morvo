@@ -12,13 +12,21 @@ from typing import Dict, List
 # Core Environment Variables
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Supabase Configuration
+# Supabase Configuration (Primary Database)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")  
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-# Database Configuration
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Auto-generate Supabase DATABASE_URL if Supabase is configured
+if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+    # Extract project reference from Supabase URL
+    supabase_ref = SUPABASE_URL.replace("https://", "").replace(".supabase.co", "")
+    SUPABASE_DATABASE_URL = f"postgresql://postgres:{SUPABASE_SERVICE_ROLE_KEY}@db.{supabase_ref}.supabase.co:5432/postgres"
+else:
+    SUPABASE_DATABASE_URL = None
+
+# Database Configuration (Fallback to Railway/Local if Supabase not available)
+DATABASE_URL = os.getenv("DATABASE_URL") or SUPABASE_DATABASE_URL
 DATABASE_HOST = os.getenv("DATABASE_HOST", "localhost")
 DATABASE_PORT = int(os.getenv("DATABASE_PORT", 5432))
 DATABASE_NAME = os.getenv("DATABASE_NAME", "morvo_ai")
@@ -53,6 +61,11 @@ A2A_AUTH_ENABLED = os.getenv("A2A_AUTH_ENABLED", "true").lower() == "true"
 A2A_MESSAGE_TTL = int(os.getenv("A2A_MESSAGE_TTL", 3600))  # 1 hour
 A2A_MAX_RETRIES = int(os.getenv("A2A_MAX_RETRIES", 3))
 A2A_RETRY_DELAY = int(os.getenv("A2A_RETRY_DELAY", 5))  # seconds
+
+# RapidAPI Configuration for SEO Audit
+RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
+RAPIDAPI_SEO_HOST = "website-analyze-and-seo-audit-pro.p.rapidapi.com"
+RAPIDAPI_SEO_BASE_URL = f"https://{RAPIDAPI_SEO_HOST}"
 
 # Git Integration Configuration
 GIT_REPO_PATH = os.getenv("GIT_REPO_PATH", ".")
@@ -271,7 +284,7 @@ A2A_NETWORK_CONFIG = {
 # Security Configuration
 SECURITY_CONFIG = {
     "cors_enabled": True,
-    "cors_origins": ["*"] if DEBUG else [],
+    "cors_origins": ["*", "http://localhost", "http://localhost:3000", "http://127.0.0.1", "file://"] if DEBUG else ["http://localhost", "http://localhost:3000", "http://127.0.0.1", "file://"],
     "rate_limiting_enabled": True,
     "ip_whitelisting_enabled": False,
     "request_validation": True,

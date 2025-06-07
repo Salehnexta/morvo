@@ -14,6 +14,12 @@ class ChatMessage(BaseModel):
     session_id: Optional[str] = None
     timestamp: Optional[datetime] = None
 
+class ChatRequest(BaseModel):
+    message: str
+    user_id: str
+    filters: Optional[Dict[str, Any]] = None
+    session_id: Optional[str] = None
+
 class ChatResponse(BaseModel):
     content: str
     agent_used: str
