@@ -18,9 +18,15 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential cmake libopenblas-dev liblapack-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Create virtual environment and install pip-tools
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+RUN pip install --upgrade pip pip-tools
+
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip-compile requirements.txt -o requirements-resolved.txt
+RUN pip install --no-cache-dir -r requirements-resolved.txt
 
 # Copy project
 COPY . .
