@@ -1,0 +1,26 @@
+# Nixpacks Configuration for Morvo AI Backend
+# Production-ready Python FastAPI deployment
+
+[providers]
+python = "3.11"
+
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
+PYTHONPATH = "."
+
+[phases.install]
+dependsOn = []
+cmds = [
+    "pip install --upgrade pip",
+    "pip install -r requirements.txt"
+]
+
+[phases.build]
+dependsOn = ["install"]
+
+[start]
+cmd = "python main.py"
+
+[environments.production]
+PYTHONUNBUFFERED = "1"
+PORT = "8000"

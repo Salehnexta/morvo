@@ -18,6 +18,8 @@ openai==1.75.0
 # Model Context Protocol (MCP) - REQUIRED for enhanced protocols
 mcp==1.9.3
 sse-starlette==2.3.6
+GitPython==3.1.40
+PyJWT==2.8.0
 
 # === HTTP & NETWORKING ===
 # Async HTTP client and WebSocket support
@@ -27,24 +29,25 @@ websockets==12.0
 requests==2.32.3
 
 # === DATABASE & CACHING ===
-# Supabase integration and Redis caching
+# Database and caching dependencies
+databases==0.8.0
+asyncpg==0.29.0
 supabase==2.15.2
 redis==5.0.1
 
 # === SECURITY & AUTH ===
-# JWT and multipart form handling
-python-jose[cryptography]==3.5.0
-python-multipart==0.0.20
+# JWT and authentication dependencies
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
 
 # === UTILITIES ===
-# Environment variables and Git operations
-python-dotenv==1.0.1
-GitPython==3.1.44
+# Environment variables and other utilities
+python-dotenv==1.0.0
 aiofiles==23.2.1
 
 # === ASYNC & CONCURRENCY ===
 # Core async runtime
-anyio==4.9.0
+anyio==4.6.2.post1
 
 # === DEVELOPMENT (Optional) ===
 # Testing and debugging - can be removed for minimal deployment
