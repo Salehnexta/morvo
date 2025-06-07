@@ -11,8 +11,21 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from pathlib import Path
 import aiohttp
-import redis.asyncio as redis
-from databases import Database
+
+# Optional imports with graceful handling
+try:
+    import redis.asyncio as redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    redis = None
+
+try:
+    from databases import Database
+    DATABASE_AVAILABLE = True
+except ImportError:
+    DATABASE_AVAILABLE = False
+    Database = None
 
 # Optional imports - handle gracefully if not available
 try:
@@ -68,16 +81,28 @@ class EnhancedProtocolManager:
                 logger.info("✅ Supabase client initialized")
             
             # Initialize Database
-            if DATABASE_URL:
-                self.database = Database(DATABASE_URL)
-                await self.database.connect()
-                logger.info("✅ Database connected")
+            if DATABASE_URL and DATABASE_AVAILABLE:
+                try:
+                    self.database = Database(DATABASE_URL)
+                    await self.database.connect()
+                    logger.info("✅ Database connected")
+                except Exception as db_err:
+                    logger.warning(f"Database connection failed: {str(db_err)}")
+                    self.database = None
+            else:
+                logger.info("ℹ️ Database module not available or not configured, skipping initialization")
             
-            # Initialize Redis
-            if REDIS_URL:
-                self.redis_client = redis.from_url(REDIS_URL)
-                await self.redis_client.ping()
-                logger.info("✅ Redis connected")
+            # Initialize Redis (optional)
+            if REDIS_URL and REDIS_AVAILABLE:
+                try:
+                    self.redis_client = redis.from_url(REDIS_URL)
+                    await self.redis_client.ping()
+                    logger.info("✅ Redis connected")
+                except Exception as redis_err:
+                    logger.warning(f"Redis connection skipped: {str(redis_err)}")
+                    self.redis_client = None
+            else:
+                logger.info("ℹ️ Redis not configured, skipping initialization")
             
             # Initialize A2A handler
             self.a2a_handler = EnhancedA2AProtocol(self.session, self.redis_client)

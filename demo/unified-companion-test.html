@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مورفو - اختبار الرفيق الموحد</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+        .chat-container { max-width: 800px; margin: 20px auto; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); background: white; }
+        .chat-header { background-color: #0d6efd; color: white; padding: 15px; border-radius: 10px 10px 0 0; }
+        .chat-messages { height: 350px; overflow-y: auto; padding: 15px; background-color: #f8f9fa; }
+        .message { margin-bottom: 10px; padding: 8px 15px; border-radius: 8px; max-width: 75%; }
+        .user-message { background-color: #e3f2fd; margin-left: auto; border-bottom-right-radius: 0; }
+        .assistant-message { background-color: white; margin-right: auto; border-bottom-left-radius: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .chat-input { padding: 15px; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5>إعدادات الاتصال</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="apiUrl">عنوان السيرفر:</label>
+                            <input type="text" id="apiUrl" class="form-control" value="https://morvo-production.up.railway.app" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userId">معرف المستخدم:</label>
+                            <input type="text" id="userId" class="form-control" value="test-user-1">
+                        </div>
+                        <button id="connectBtn" class="btn btn-primary">اتصال</button>
+                        <button id="disconnectBtn" class="btn btn-outline-danger ms-2" disabled>قطع الاتصال</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <h4 class="m-0">مورفو - الرفيق الموحد للتسويق</h4>
+                <span id="statusIndicator" class="badge bg-secondary">غير متصل</span>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant-message">
+                    <div>مرحباً! أنا مورفو، رفيقك التسويقي الذكي. كيف يمكنني مساعدتك اليوم؟</div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <form id="messageForm">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="اكتب رسالتك هنا..." disabled>
+                        <button type="submit" class="btn btn-primary" id="sendBtn" disabled>
+                            إرسال
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversationId = null;
+        let isConnected = false;
+
+        document.getElementById('connectBtn').addEventListener('click', () => {
+            isConnected = true;
+            document.getElementById('statusIndicator').className = 'badge bg-success';
+            document.getElementById('statusIndicator').textContent = 'متصل';
+            document.getElementById('connectBtn').disabled = true;
+            document.getElementById('disconnectBtn').disabled = false;
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+        });
+
+        document.getElementById('disconnectBtn').addEventListener('click', () => {
+            isConnected = false;
+            document.getElementById('statusIndicator').className = 'badge bg-secondary';
+            document.getElementById('statusIndicator').textContent = 'غير متصل';
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('disconnectBtn').disabled = true;
+            document.getElementById('messageInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+        });
+
+        document.getElementById('messageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!isConnected) return;
+            
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                addMessage(message, 'user');
+                messageInput.value = '';
+                
+                // Simulate API call
+                setTimeout(() => {
+                    const responses = {
+                        'مرحبا': 'أهلاً وسهلاً! 👋 أنا مورفو، مستشار التسويق الرقمي. كيف يمكنني مساعدة عملك اليوم؟',
+                        'seo': 'لتحسين محركات البحث، ركز على:\n1. محتوى عالي الجودة\n2. سرعة الموقع\n3. تجربة المستخدم\nهذا سيزيد ظهورك بنسبة 30% ويحسن التحويل.',
+                        'default': 'شكراً لسؤالك! أنصح بتحليل بيانات الجمهور أولاً، ثم تطوير استراتيجية محتوى تستهدف اهتماماتهم. هذا سيزيد مشاركة العملاء بنسبة 25% ويدعم النمو في المبيعات.'
+                    };
+                    
+                    let response = responses.default;
+                    for (let key in responses) {
+                        if (message.toLowerCase().includes(key)) {
+                            response = responses[key];
+                            break;
+                        }
+                    }
+                    
+                    addMessage(response, 'assistant');
+                }, 1000);
+            }
+        });
+
+        function addMessage(text, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.innerHTML = `<div>${text}</div>`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

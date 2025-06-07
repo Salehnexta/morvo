@@ -19,9 +19,12 @@ SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 # Auto-generate Supabase DATABASE_URL if Supabase is configured
 if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
+    # Clean up the service role key (remove quotes and comments if present)
+    clean_key = SUPABASE_SERVICE_ROLE_KEY.strip().replace('"', '').split('#')[0].strip()
+    
     # Extract project reference from Supabase URL
     supabase_ref = SUPABASE_URL.replace("https://", "").replace(".supabase.co", "")
-    SUPABASE_DATABASE_URL = f"postgresql://postgres:{SUPABASE_SERVICE_ROLE_KEY}@db.{supabase_ref}.supabase.co:5432/postgres"
+    SUPABASE_DATABASE_URL = f"postgresql://postgres:{clean_key}@db.{supabase_ref}.supabase.co:5432/postgres"
 else:
     SUPABASE_DATABASE_URL = None
 
