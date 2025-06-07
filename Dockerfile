@@ -2,33 +2,38 @@
 FROM python:3.11-slim
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PIP_NO_CACHE_DIR=1
 
 # Set work directory
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev python3-dev libjpeg-dev zlib1g-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    python3-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    build-essential \
+    cmake \
+    libopenblas-dev \
+    liblapack-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install build dependencies for crewai
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential cmake libopenblas-dev liblapack-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Install pip-tools first
+RUN pip install --upgrade pip && pip install pip-tools
 
-# Create virtual environment and install pip-tools
-RUN python -m venv /venv
-ENV PATH="/venv/bin:$PATH"
-RUN pip install --upgrade pip pip-tools
+# Copy requirements files
+COPY requirements.in .
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip-compile requirements.txt -o requirements-resolved.txt
-RUN pip install --no-cache-dir -r requirements-resolved.txt
+# Compile and install requirements
+RUN pip-compile --resolver=backtracking -o requirements.txt requirements.in && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy project
+# Copy the rest of the application
 COPY . .
 
 # Command to run the application
