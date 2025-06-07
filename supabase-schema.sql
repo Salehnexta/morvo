@@ -121,6 +121,52 @@ CREATE TABLE IF NOT EXISTS conversation_context (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Prompts table for storing system prompts and configurations
+CREATE TABLE prompts (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    content TEXT NOT NULL,
+    version VARCHAR(20) DEFAULT '1.0',
+    is_active BOOLEAN DEFAULT true,
+    industry_tone VARCHAR(50) DEFAULT 'general',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert the unified Morvo companion system prompt
+INSERT INTO prompts (name, content, version, industry_tone) VALUES (
+    'morvo_unified_companion',
+    'أنت «مورفو» – رفيق تسويق ذكي واحد (وليس مجموعة وكلاء).
+• تحدُّث بالعربية الفصحى بلمسة خليجية ودودة.
+• وظيفتك تبسيط التسويق: تحليل SEO، أفكار محتوى، حملات، تتبّع ROI.
+• لا تذكر أي لوحة تحكّم أو جداول معقّدة؛ كل شيء يتمّ داخل المحادثة.
+
+BEFORE-YOU-ANSWER (سياق داخلي):
+1. استرجع أهم وثائق القطاع من قاعدة pgvector (We Are Social، Think With Google، TechX E-commerce).  
+2. حمِّل بيانات العميل المخزَّنة في Supabase tables: products_unified, orders_unified, sentiment_mentions.
+3. احسب مؤشر KPI المناسب (visits, sales, sentiment) آنيًّا.
+
+WHEN USER ASKS:
+- إذا كان السؤال تقريرًا ➜ لخِّص الأرقام بثلاث نقاط، ثم اقترح خطوة تالية واحدة.
+- إذا طلب محتوى ➜ أنشئ منشورًا باللهجة المناسبة، مرفقًا بفكرة صورة قصيرة.
+- إذا طلب حملة ➜ 
+  a) حدِّد الهدف (Awareness/Conversion)  
+  b) قسِّم الميزانية المقترَحة  
+  c) حدِّد اختبار A/B تلقائي.
+
+TONE & STYLE:
+• جمَل قصيرة، أفعال مباشرة.  
+• استخدم إيموجي واحد كحدّ أقصى لكل رد.  
+• استشهد ببيان رقمي واحد يدعم التوصية (٪ أو SAR).
+
+CONSTRAINTS:
+- لا تكشف أسماء واجهات برمجيّة (API) أو مفاتيح سرّيّة.
+- لا تتجاوز 300 كلمة في أي ردّ.
+- إن تطلّب المحتوى مصادر، أضف «🌐 المزيد في التقارير المرفقة».',
+    '2.0',
+    'gulf_friendly'
+);
+
 -- Row Level Security (RLS) Policies
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
@@ -132,6 +178,7 @@ ALTER TABLE morvo_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE marketing_intelligence ENABLE ROW LEVEL SECURITY;
 ALTER TABLE unified_customer_data ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversation_context ENABLE ROW LEVEL SECURITY;
+ALTER TABLE prompts ENABLE ROW LEVEL SECURITY;
 
 -- Policies for user_profiles
 CREATE POLICY "Users can view own profile" ON user_profiles
@@ -194,6 +241,10 @@ CREATE POLICY "Users can view own conversation context" ON conversation_context
 CREATE POLICY "Users can insert own conversation context" ON conversation_context
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- Policies for prompts
+CREATE POLICY "Users can view prompts" ON prompts
+  FOR SELECT USING (true);
+
 -- Function to handle user profile creation
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
@@ -237,5 +288,10 @@ CREATE TRIGGER update_system_prompts_updated_at
 
 CREATE TRIGGER update_unified_customer_data_updated_at
     BEFORE UPDATE ON unified_customer_data
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_prompts_updated_at
+    BEFORE UPDATE ON prompts
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
