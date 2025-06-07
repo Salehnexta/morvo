@@ -44,6 +44,8 @@ logger = logging.getLogger(__name__)
 # Enhanced MCP server instance
 if MCP_AVAILABLE:
     mcp_server = Server("morvo-enhanced-mcp")
+else:
+    mcp_server = None  # Define as None when MCP is not available
 
 
 class EnhancedMCPResource:

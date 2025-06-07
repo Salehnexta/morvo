@@ -26,15 +26,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install pip-tools first
 RUN pip install --upgrade pip && pip install pip-tools
 
-# Copy requirements files
-COPY requirements.in .
-
-# Compile and install requirements
-RUN pip-compile --resolver=backtracking -o requirements.txt requirements.in && \
-    pip install --no-cache-dir -r requirements.txt
+# Copy and install requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
 
 # Command to run the application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

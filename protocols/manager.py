@@ -49,7 +49,11 @@ from config import (
     DATABASE_URL,
     REDIS_URL
 )
-from .mcp_server import mcp_server
+# Try to import mcp_server, set to None if not available
+try:
+    from .mcp_server import mcp_server
+except ImportError:
+    mcp_server = None
 from .a2a_protocol import EnhancedA2AProtocol
 
 logger = logging.getLogger(__name__)

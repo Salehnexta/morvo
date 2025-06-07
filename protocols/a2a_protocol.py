@@ -11,7 +11,13 @@ import hashlib
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 import aiohttp
-import redis.asyncio as redis
+# Make Redis import optional
+try:
+    import redis.asyncio as redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    redis = None
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
@@ -20,9 +26,9 @@ logger = logging.getLogger(__name__)
 class EnhancedA2AProtocol:
     """Enhanced Agent-to-Agent Protocol Handler with Security"""
     
-    def __init__(self, session: aiohttp.ClientSession, redis_client: Optional[redis.Redis] = None):
+    def __init__(self, session: aiohttp.ClientSession, redis_client: Optional[Any] = None):
         self.session = session
-        self.redis_client = redis_client
+        self.redis_client = redis_client if REDIS_AVAILABLE else None
         self.endpoints: Dict[str, Dict] = {}
         self.authentication_tokens: Dict[str, str] = {}
         # Additional properties expected by main_new.py
@@ -55,7 +61,7 @@ class EnhancedA2AProtocol:
         self.agents[agent_id] = registration_data
         
         # Cache in Redis if available
-        if self.redis_client:
+        if self.redis_client and REDIS_AVAILABLE:
             await self.redis_client.setex(
                 f"agent:{agent_id}",
                 3600,  # 1 hour TTL
@@ -121,7 +127,7 @@ class EnhancedA2AProtocol:
                             break
                     
                     # Log successful communication
-                    if self.redis_client:
+                    if self.redis_client and REDIS_AVAILABLE:
                         await self.redis_client.lpush(
                             f"communication_log:{from_agent}",
                             json.dumps({
@@ -136,7 +142,7 @@ class EnhancedA2AProtocol:
                 else:
                     # Update message status in queue
                     for msg in self.message_queue:
-                        if msg["id"] == payload["message_id"]:
+                        if msg.get("id") == payload["message_id"]:
                             msg["status"] = "failed"
                             break
                             
@@ -155,7 +161,7 @@ class EnhancedA2AProtocol:
                     break
             
             # Log failed communication
-            if self.redis_client:
+            if self.redis_client and REDIS_AVAILABLE:
                 await self.redis_client.lpush(
                     f"communication_log:{from_agent}",
                     json.dumps({

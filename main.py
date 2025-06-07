@@ -24,9 +24,10 @@ from protocols import EnhancedProtocolManager
 
 # Import route modules
 from routes.chat import router as chat_router
-from routes.analytics import router as analytics_router
-from routes.social import router as social_router
-from routes.seo import router as seo_router
+# Commented out missing routes - use production server for full functionality
+# from routes.analytics import router as analytics_router
+# from routes.social import router as social_router
+# from routes.seo import router as seo_router
 
 # Configure enhanced logging
 import logging.config
@@ -103,9 +104,10 @@ app.add_middleware(
 
 # تسجيل المسارات
 app.include_router(chat_router)
-app.include_router(analytics_router)
-app.include_router(social_router)
-app.include_router(seo_router)
+# Commented out missing routes - use production server for full functionality
+# app.include_router(analytics_router)
+# app.include_router(social_router)
+# app.include_router(seo_router)
 
 # المسارات الأساسية المحسنة
 @app.get("/")
