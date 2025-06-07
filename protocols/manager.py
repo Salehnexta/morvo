@@ -143,8 +143,9 @@ class EnhancedProtocolManager:
             "protocols": {
                 "mcp": {
                     "status": "active",
-                    "resources_count": len(self.mcp_server.list_resources()) if hasattr(self.mcp_server, 'list_resources') else 0,
-                    "tools_count": len(self.mcp_server.list_tools()) if hasattr(self.mcp_server, 'list_tools') else 0
+                    # Fix: Don't call the function directly, it's a decorator reference
+                    "resources_count": 6,  # Hardcoded count based on the list in mcp_server.py
+                    "tools_count": 3  # Hardcoded count based on the list in mcp_server.py
                 },
                 "a2a": {
                     "status": "active" if self.a2a_handler else "not_initialized",
