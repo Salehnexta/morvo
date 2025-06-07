@@ -1,9 +1,26 @@
 // Morvo AI - Unified Companion Edge Function
 // مورفو - الرفيق الموحد للتسويق
 
+// deno-lint-ignore-file no-explicit-any
+
+// Add TypeScript interfaces for Deno global
+declare global {
+  interface Window {
+    Deno: {
+      env: {
+        get(key: string): string | undefined;
+      };
+    };
+  }
+}
+
+// Use var to make Deno available in the global scope for TypeScript
+var Deno = window.Deno;
+
+// Deno imports
 import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
-import { OpenAI } from "https://esm.sh/openai@4.6.0";
+import OpenAI from "https://esm.sh/openai@4.6.0";
 
 // Types
 interface RequestBody {
@@ -28,16 +45,22 @@ interface Memory {
   importance: number;
 }
 
-// Environment variables
-const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") as string;
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
-const openaiApiKey = Deno.env.get("OPENAI_API_KEY") as string;
+// Environment variables - support multiple environment variable names to be flexible
+const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+// Support both key naming conventions
+const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_KEY") || "";
+// Support both service role key naming conventions
+const supabaseServiceKey = 
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || 
+  Deno.env.get("SUPABASE_ACCESS_TOKEN") || 
+  "";
+const openaiApiKey = Deno.env.get("OPENAI_API_KEY") || "";
 
 // Create clients
 const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
+// Create OpenAI client with safety check
 const openaiClient = new OpenAI({
-  apiKey: openaiApiKey,
+  apiKey: openaiApiKey || "missing-key"
 });
 
 async function handler(req: Request): Promise<Response> {
@@ -102,7 +125,8 @@ async function handler(req: Request): Promise<Response> {
       .single();
 
     // Default prompt if none found in database
-    const systemPrompt = promptData?.content || `أنت «مورفو» – رفيق تسويق ذكي واحد.
+    // Default Gulf-friendly Arabic system prompt if not found in database
+  const systemPrompt = promptData?.content || `أنت «مورفو» – رفيق تسويق ذكي واحد.
     • تحدّث بالعربية الفصحى بلمسة خليجية ودودة.
     • وظيفتك تبسيط التسويق: تحليل SEO، أفكار محتوى، حملات، تتبّع ROI.
     • لا تذكر أي لوحة تحكّم أو جداول معقّدة؛ كل شيء يتمّ داخل المحادثة.
@@ -212,5 +236,11 @@ async function handler(req: Request): Promise<Response> {
     );
   }
 }
+
+// Start the Edge Function server
+console.log("🚀 Morvo Unified Companion Edge Function Started");
+console.log(`Supabase URL configured: ${supabaseUrl ? 'Yes' : 'No'}`);
+console.log(`Supabase Keys configured: ${supabaseAnonKey && supabaseServiceKey ? 'Yes' : 'No'}`);
+console.log(`OpenAI API Key configured: ${openaiApiKey ? 'Yes' : 'No'}`);
 
 serve(handler);
