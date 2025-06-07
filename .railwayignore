@@ -1,4 +1,56 @@
-# Railway deployment - Include essential modular files only
+# Files to ignore during Railway deployment
+# Only ignore specific unwanted files, not everything
+
+# Virtual environment and cache
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Development files  
+.env
+.env.local
+debug_components.py
+*_test.py
+test_*.py
+
+# Documentation (keep essential ones)
+*.md
+!README.md
+!DEPLOYMENT_GUIDE.md
+!RAILWAY_DEPLOYMENT_GUIDE.md
+
+# Git and IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Docker files (using Nixpacks instead)
+Dockerfile*
+.dockerignore
+docker-compose*
+*.dockerfile
+
+# Node.js files
+package.json*
+package-lock.json
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.bak
+*.tmp
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # Core application files
 !main_new.py
@@ -16,34 +68,4 @@
 !requirements.txt
 !railway.toml
 !.env.example
-!README.md
 !start.sh
-
-# Ignore everything else
-*
-
-# Explicitly ignore problematic files
-Dockerfile*
-.dockerignore
-docker-compose*
-*.dockerfile
-package.json*
-package-lock.json
-node_modules/
-nixpacks.toml
-
-# Ignore old/backup files
-main.py
-backup_*/
-*backup*
-*old*
-*test*
-*tmp*
-
-# Ignore development files
-.git/
-.venv/
-__pycache__/
-*.pyc
-.env
-.DS_Store
