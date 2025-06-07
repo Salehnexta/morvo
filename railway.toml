@@ -2,10 +2,11 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "python main_new.py"
+startCommand = "python main.py"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
 # Updated: 2025-06-07T02:58:00+03:00 - Fixed port binding for Railway deployment
+# Updated: 2025-06-07T03:33:00+03:00 - Simplified to use main.py as primary entry point

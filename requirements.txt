@@ -1,35 +1,52 @@
-# Railway Deployment - Strictly Constrained Versions
-# Fixed pip backtracking issue with exact version pinning
+# MORVO AI BACKEND - PRODUCTION DEPENDENCIES
+# Exact versions for Railway deployment compatibility
+# Updated: 2025-01-07
 
-# Core FastAPI Stack - Exact versions
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-pydantic-core==2.14.1
-starlette==0.27.0
-h11==0.14.0
-anyio==3.7.1
+# === CORE FRAMEWORK ===
+# FastAPI and ASGI server with exact versions for stability
+fastapi==0.115.9
+uvicorn[standard]==0.29.0
+starlette==0.45.3
+pydantic==2.11.5
 
-# AI Core - OpenAI only (no conflicts)
-openai==1.6.1
+# === AI & AGENTS ===
+# CrewAI for multi-agent orchestration
+crewai==0.121.1
+openai==1.75.0
 
-# Essential utilities - Fixed versions
-python-dotenv==1.0.0
-requests==2.31.0
-websockets==11.0.2
+# === PROTOCOLS ===
+# Model Context Protocol (MCP) - REQUIRED for enhanced protocols
+mcp==1.9.3
+sse-starlette==2.3.6
 
-# Security - Exact versions
-python-jose[cryptography]==3.3.0
-python-multipart==0.0.6
+# === HTTP & NETWORKING ===
+# Async HTTP client and WebSocket support
+aiohttp==3.12.6
+httpx==0.28.1
+websockets==12.0
+requests==2.32.3
 
-# File handling - Fixed
+# === DATABASE & CACHING ===
+# Supabase integration and Redis caching
+supabase==2.15.2
+redis==5.0.1
+
+# === SECURITY & AUTH ===
+# JWT and multipart form handling
+python-jose[cryptography]==3.5.0
+python-multipart==0.0.20
+
+# === UTILITIES ===
+# Environment variables and Git operations
+python-dotenv==1.0.1
+GitPython==3.1.44
 aiofiles==23.2.1
 
-# HTTP client - Exact version
-httpx==0.26.0
-httpcore==1.0.8
+# === ASYNC & CONCURRENCY ===
+# Core async runtime
+anyio==4.9.0
 
-# Basic dependencies - No conflicts
-typing-extensions==4.8.0
-click==8.1.8
-certifi==2024.8.30
+# === DEVELOPMENT (Optional) ===
+# Testing and debugging - can be removed for minimal deployment
+pytest>=8.0.0
+pytest-asyncio>=0.23.0

@@ -5,7 +5,7 @@ Agents Management for Morvo AI
 
 import logging
 from crewai import Agent, Task, Crew, Process
-from langchain_openai import ChatOpenAI
+from openai import OpenAI
 from config import AGENTS_CONFIG, OPENAI_API_KEY
 from typing import Dict, List, Optional
 
@@ -15,11 +15,8 @@ class MorvoAgents:
     """مدير الوكلاء المتخصصين"""
     
     def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0.7,
-            api_key=OPENAI_API_KEY
-        )
+        # CrewAI now handles OpenAI integration internally
+        self.openai_client = OpenAI(api_key=OPENAI_API_KEY)
         self.agents = self._create_agents()
         
     def _create_agents(self) -> Dict[str, Agent]:
@@ -27,13 +24,13 @@ class MorvoAgents:
         agents = {}
         
         for agent_config in AGENTS_CONFIG:
+            # Latest CrewAI automatically handles LLM configuration
             agent = Agent(
                 role=agent_config["role"],
                 goal=agent_config["goal"],
                 backstory=agent_config["backstory"],
                 verbose=True,
                 allow_delegation=True,
-                llm=self.llm,
                 max_iter=3,
                 memory=True
             )
