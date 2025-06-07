@@ -14,10 +14,14 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Supabase Configuration (Primary Database)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")  
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+# Handle different names for the anon key
+SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_ANON_KEY")  
+# Handle different names for the service role key
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_ACCESS_TOKEN")
 
 # Auto-generate Supabase DATABASE_URL if Supabase is configured
+# Log the available Supabase configuration for debugging
+print(f"Supabase Config - URL: {'Available' if SUPABASE_URL else 'Missing'}, KEY: {'Available' if SUPABASE_KEY else 'Missing'}, SERVICE_KEY: {'Available' if SUPABASE_SERVICE_ROLE_KEY else 'Missing'}")
 if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
     # Clean up the service role key (remove quotes and comments if present)
     clean_key = SUPABASE_SERVICE_ROLE_KEY.strip().replace('"', '').split('#')[0].strip()
