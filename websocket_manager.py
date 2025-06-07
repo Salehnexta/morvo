@@ -75,14 +75,15 @@ manager = ConnectionManager()
 
 # Import the AI agent handler if available
 try:
+    # Import the unified morvo companion directly 
     from agents import UnifiedMorvoCompanion
-    AI_AVAILABLE = True
     morvo_ai = UnifiedMorvoCompanion()
-    logger.info("تم تحميل وكيل مورفو الذكي بنجاح")
+    AI_AVAILABLE = True
+    logger.info("تم تحميل رفيق مورفو الموحد بنجاح")
 except ImportError:
     AI_AVAILABLE = False
     morvo_ai = None
-    logger.warning("فشل تحميل وكيل مورفو الذكي - سيعمل وضع المحاكاة فقط")
+    logger.warning("فشل تحميل رفيق مورفو الموحد - سيعمل وضع المحاكاة فقط")
 
 async def process_chat_message(message: dict, user_id: str) -> dict:
     """معالجة رسالة دردشة ومحاولة الحصول على رد من وكيل الذكاء الاصطناعي"""
