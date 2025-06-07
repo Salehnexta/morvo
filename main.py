@@ -319,7 +319,7 @@ if __name__ == "__main__":
     logger.info(f"🔧 البروتوكولات المحسنة: {'مفعلة' if ENHANCED_PROTOCOLS_AVAILABLE else 'معطلة'}")
     
     uvicorn.run(
-        "main_new:app",
+        "main:app",
         host="0.0.0.0",
         port=port,
         reload=DEBUG,
