@@ -12,9 +12,23 @@ from datetime import datetime
 from pathlib import Path
 import aiohttp
 import redis.asyncio as redis
-from supabase import create_client, Client
 from databases import Database
-from git import Repo
+
+# Optional imports - handle gracefully if not available
+try:
+    from supabase import create_client, Client
+    SUPABASE_AVAILABLE = True
+except ImportError:
+    SUPABASE_AVAILABLE = False
+    create_client = None
+    Client = None
+
+try:
+    from git import Repo
+    GIT_AVAILABLE = True
+except ImportError:
+    GIT_AVAILABLE = False
+    Repo = None
 
 from config import (
     SUPABASE_URL, 
@@ -49,7 +63,7 @@ class EnhancedProtocolManager:
             self.session = aiohttp.ClientSession()
             
             # Initialize Supabase
-            if SUPABASE_URL and SUPABASE_KEY:
+            if SUPABASE_AVAILABLE and SUPABASE_URL and SUPABASE_KEY:
                 self.supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
                 logger.info("✅ Supabase client initialized")
             
@@ -146,7 +160,7 @@ class EnhancedProtocolManager:
         """تهيئة مستودعات Git المحلية"""
         try:
             project_root = Path.cwd()
-            if (project_root / ".git").exists():
+            if (project_root / ".git").exists() and GIT_AVAILABLE:
                 self.git_repos["main"] = Repo(project_root)
                 logger.info(f"Git repository initialized: {project_root}")
         except Exception as e:

@@ -10,17 +10,40 @@ import json
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from pathlib import Path
-import mcp.server.stdio
-import mcp.types as types
-from mcp.server import NotificationOptions, Server
-from mcp.server.models import InitializationOptions
-from supabase import Client
-from git import Repo
+
+# Optional imports - handle gracefully if not available
+try:
+    import mcp.server.stdio
+    import mcp.types as types
+    from mcp.server import NotificationOptions, Server
+    from mcp.server.models import InitializationOptions
+    MCP_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+    types = None
+    NotificationOptions = None
+    Server = None
+    InitializationOptions = None
+
+try:
+    from supabase import Client
+    SUPABASE_AVAILABLE = True
+except ImportError:
+    SUPABASE_AVAILABLE = False
+    Client = None
+
+try:
+    from git import Repo
+    GIT_AVAILABLE = True
+except ImportError:
+    GIT_AVAILABLE = False
+    Repo = None
 
 logger = logging.getLogger(__name__)
 
 # Enhanced MCP server instance
-mcp_server = Server("morvo-enhanced-mcp")
+if MCP_AVAILABLE:
+    mcp_server = Server("morvo-enhanced-mcp")
 
 
 class EnhancedMCPResource:
@@ -124,154 +147,155 @@ class EnhancedMCPResource:
 enhanced_resource_handler = EnhancedMCPResource()
 
 
-@mcp_server.list_resources()
-async def handle_list_resources() -> list[types.Resource]:
-    """List enhanced MCP resources"""
-    return [
-        types.Resource(
-            uri="supabase://agents/select",
-            name="Morvo Agents Data",
-            description="معلومات الوكلاء المسجلين في قاعدة البيانات",
-            mimeType="application/json",
-        ),
-        types.Resource(
-            uri="supabase://conversations/select", 
-            name="Conversations Data",
-            description="بيانات المحادثات والتفاعلات",
-            mimeType="application/json",
-        ),
-        types.Resource(
-            uri="git://main/status",
-            name="Git Repository Status",
-            description="حالة مستودع Git الرئيسي",
-            mimeType="application/json",
-        ),
-        types.Resource(
-            uri="git://main/log",
-            name="Git Commit Log",
-            description="سجل التغييرات الأخيرة في Git",
-            mimeType="application/json",
-        ),
-        types.Resource(
-            uri="file://config.py",
-            name="Configuration File",
-            description="ملف التكوين الرئيسي",
-            mimeType="text/python",
-        ),
-        types.Resource(
-            uri="file://requirements.txt",
-            name="Dependencies",
-            description="قائمة التبعيات المطلوبة",
-            mimeType="text/plain",
-        ),
-    ]
+if MCP_AVAILABLE:
+    @mcp_server.list_resources()
+    async def handle_list_resources() -> list[types.Resource]:
+        """List enhanced MCP resources"""
+        return [
+            types.Resource(
+                uri="supabase://agents/select",
+                name="Morvo Agents Data",
+                description="معلومات الوكلاء المسجلين في قاعدة البيانات",
+                mimeType="application/json",
+            ),
+            types.Resource(
+                uri="supabase://conversations/select", 
+                name="Conversations Data",
+                description="بيانات المحادثات والتفاعلات",
+                mimeType="application/json",
+            ),
+            types.Resource(
+                uri="git://main/status",
+                name="Git Repository Status",
+                description="حالة مستودع Git الرئيسي",
+                mimeType="application/json",
+            ),
+            types.Resource(
+                uri="git://main/log",
+                name="Git Commit Log",
+                description="سجل التغييرات الأخيرة في Git",
+                mimeType="application/json",
+            ),
+            types.Resource(
+                uri="file://config.py",
+                name="Configuration File",
+                description="ملف التكوين الرئيسي",
+                mimeType="text/python",
+            ),
+            types.Resource(
+                uri="file://requirements.txt",
+                name="Dependencies",
+                description="قائمة التبعيات المطلوبة",
+                mimeType="text/plain",
+            ),
+        ]
 
 
-@mcp_server.read_resource()
-async def handle_read_resource(uri: str) -> str:
-    """Read enhanced resource content"""
-    return await enhanced_resource_handler.get_resource_content(uri)
+    @mcp_server.read_resource()
+    async def handle_read_resource(uri: str) -> str:
+        """Read enhanced resource content"""
+        return await enhanced_resource_handler.get_resource_content(uri)
 
 
-@mcp_server.list_tools()
-async def handle_list_tools() -> list[types.Tool]:
-    """List enhanced MCP tools"""
-    return [
-        types.Tool(
-            name="supabase_query",
-            description="تنفيذ استعلام على قاعدة بيانات Supabase",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "table": {
-                        "type": "string",
-                        "description": "اسم الجدول"
+    @mcp_server.list_tools()
+    async def handle_list_tools() -> list[types.Tool]:
+        """List enhanced MCP tools"""
+        return [
+            types.Tool(
+                name="supabase_query",
+                description="تنفيذ استعلام على قاعدة بيانات Supabase",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "table": {
+                            "type": "string",
+                            "description": "اسم الجدول"
+                        },
+                        "operation": {
+                            "type": "string", 
+                            "enum": ["select", "insert", "update", "delete"],
+                            "description": "نوع العملية"
+                        },
+                        "data": {
+                            "type": "object",
+                            "description": "البيانات للعملية"
+                        }
                     },
-                    "operation": {
-                        "type": "string", 
-                        "enum": ["select", "insert", "update", "delete"],
-                        "description": "نوع العملية"
-                    },
-                    "data": {
-                        "type": "object",
-                        "description": "البيانات للعملية"
-                    }
+                    "required": ["table", "operation"]
                 },
-                "required": ["table", "operation"]
-            },
-        ),
-        types.Tool(
-            name="git_operation",
-            description="تنفيذ عمليات Git",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "operation": {
-                        "type": "string",
-                        "enum": ["status", "add", "commit", "push", "pull", "log"],
-                        "description": "عملية Git"
+            ),
+            types.Tool(
+                name="git_operation",
+                description="تنفيذ عمليات Git",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "operation": {
+                            "type": "string",
+                            "enum": ["status", "add", "commit", "push", "pull", "log"],
+                            "description": "عملية Git"
+                        },
+                        "message": {
+                            "type": "string",
+                            "description": "رسالة التحديث (للcommit)"
+                        },
+                        "files": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "الملفات للإضافة (للadd)"
+                        }
                     },
-                    "message": {
-                        "type": "string",
-                        "description": "رسالة التحديث (للcommit)"
-                    },
-                    "files": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "الملفات للإضافة (للadd)"
-                    }
+                    "required": ["operation"]
                 },
-                "required": ["operation"]
-            },
-        ),
-        types.Tool(
-            name="cache_operation",
-            description="عمليات التخزين المؤقت مع Redis",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "operation": {
-                        "type": "string",
-                        "enum": ["get", "set", "delete", "exists"],
-                        "description": "عملية التخزين المؤقت"
+            ),
+            types.Tool(
+                name="cache_operation",
+                description="عمليات التخزين المؤقت مع Redis",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "operation": {
+                            "type": "string",
+                            "enum": ["get", "set", "delete", "exists"],
+                            "description": "عملية التخزين المؤقت"
+                        },
+                        "key": {
+                            "type": "string",
+                            "description": "مفتاح التخزين"
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "القيمة (للset)"
+                        },
+                        "ttl": {
+                            "type": "integer",
+                            "description": "مدة البقاء بالثواني"
+                        }
                     },
-                    "key": {
-                        "type": "string",
-                        "description": "مفتاح التخزين"
-                    },
-                    "value": {
-                        "type": "string",
-                        "description": "القيمة (للset)"
-                    },
-                    "ttl": {
-                        "type": "integer",
-                        "description": "مدة البقاء بالثواني"
-                    }
+                    "required": ["operation", "key"]
                 },
-                "required": ["operation", "key"]
-            },
-        ),
-    ]
+            ),
+        ]
 
 
-@mcp_server.call_tool()
-async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
-    """Handle enhanced tool calls"""
-    try:
-        if name == "supabase_query":
-            result = await _handle_supabase_query(arguments)
-        elif name == "git_operation":
-            result = await _handle_git_operation(arguments)
-        elif name == "cache_operation":
-            result = await _handle_cache_operation(arguments)
-        else:
-            result = f"Unknown tool: {name}"
+    @mcp_server.call_tool()
+    async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
+        """Handle enhanced tool calls"""
+        try:
+            if name == "supabase_query":
+                result = await _handle_supabase_query(arguments)
+            elif name == "git_operation":
+                result = await _handle_git_operation(arguments)
+            elif name == "cache_operation":
+                result = await _handle_cache_operation(arguments)
+            else:
+                result = f"Unknown tool: {name}"
+                
+            return [types.TextContent(type="text", text=result)]
             
-        return [types.TextContent(type="text", text=result)]
-        
-    except Exception as e:
-        logger.error(f"Tool call failed for {name}: {str(e)}")
-        return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+        except Exception as e:
+            logger.error(f"Tool call failed for {name}: {str(e)}")
+            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
 
 async def _handle_supabase_query(args: dict) -> str:
