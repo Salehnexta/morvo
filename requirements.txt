@@ -47,7 +47,7 @@ aiofiles==23.2.1
 
 # === ASYNC & CONCURRENCY ===
 # Core async runtime
-anyio==4.6.2.post1
+anyio==4.7.0
 
 # === DEVELOPMENT (Optional) ===
 # Testing and debugging - can be removed for minimal deployment
